@@ -21,8 +21,8 @@ menu = st.selectbox(
 
 def HomePage():
     # Streamlit app header
-    st.markdown("<h4 style = 'text-align: center; font-family:montserrat'>Smart GPA & CGPA Calculator for University Students</h2>",unsafe_allow_html=True)
-    st.markdown("<h6 style = 'margin: 10px; text-align: center ; font-family:montserrat'>A simple, interactive GPA & CGPA calculator for university students using the Nigerian grading system. Built with Streamlit, it lets students input scores across multiple semesters and sessions to instantly compute GPA and CGPA.</h6>",unsafe_allow_html=True)
+    st.markdown("<h5 style = 'text-align: center; font-family:montserrat'>Smart GPA & CGPA Calculator for University Students</h5>",unsafe_allow_html=True)
+    st.markdown("<p style = 'margin: 10px; text-align: center ; font-family:montserrat'>A simple, interactive GPA & CGPA calculator for university students using the Nigerian grading system. Built with Streamlit, it lets students input scores across multiple semesters and sessions to instantly compute GPA and CGPA.</hp>",unsafe_allow_html=True)
     st.image('smiling-woman-with-afro-posing-pink-sweater.jpg',  width = 800)
     # 👣 6. Footer
     st.markdown("""

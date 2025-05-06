@@ -19,13 +19,6 @@ menu = st.selectbox(
 )
 
 
-
-menu = st.selectbox(
-    "Choose a page:",
-    ["Home", "4.0 GPA/CGPA Calculator", "5.0 GPA/CGPA Calculator"]
-)
-
-
 def HomePage():
     # Streamlit app header
     st.markdown("<h2 style = 'text-align: center; font-family:montserrat'>Smart GPA & CGPA Calculator for University Students</h2>",unsafe_allow_html=True)

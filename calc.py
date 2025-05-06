@@ -4,11 +4,17 @@ import streamlit as st
 st.set_page_config(page_title="GPA/CGPA Calculator", layout="centered")
 
 
+# Adding custom CSS for mobile-friendly font size
 st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
     <style>
-        html, body, [class*="css"]  {
+        html, body, [class*="css"] {
             font-family: 'Montserrat', sans-serif;
+        }
+        .mobile-text {
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
         }
     </style>
 """, unsafe_allow_html=True)

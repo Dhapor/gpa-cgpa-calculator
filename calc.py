@@ -75,7 +75,7 @@ elif menu == "4.0 GPA/CGPA Calculator":
     sessions = st.number_input("How many sessions?", min_value=1, step=1)
 
     for s in range(1, sessions + 1):
-        st.markdown(f"📘 Session {s}")
+        st.subheader(f"📘 Session {s}")
         semesters = st.number_input(f"How many semesters in session {s}?", min_value=1, step=1, key=f"sem_{s}")
 
         for sem in range(1, semesters + 1):
@@ -154,7 +154,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
     """, unsafe_allow_html=True)
 
     # 📌 2. Title
-    st.title("🎓 5.0 GPA & CGPA Calculator")
+    st.subtitle("🎓 5.0 GPA & CGPA Calculator")
 
     # 🧠 3. Helper Function
     def get_grade_point(score):

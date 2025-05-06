@@ -3,10 +3,11 @@ import streamlit as st
 
 st.set_page_config(page_title="GPA/CGPA Calculator", layout="centered")
 
-st.sidebar.image('DDD.jpg', width=300)
+menu = st.selectbox(
+    "Choose a page:",
+    ["Home", "4.0 GPA/CGPA Calculator", "5.0 GPA/CGPA Calculator"]
+)
 
-st.sidebar.markdown('<br>', unsafe_allow_html=True)
-selected_page = st.sidebar.radio('Navigation', ['Home', "4.0 GPA/CGPA Calculator", "5.0 GPA/CGPA Calculator"])
 
 def HomePage():
     # Streamlit app header
@@ -21,9 +22,9 @@ def HomePage():
 
 
 
-if selected_page == "Home":
+if menu == "Home":
     HomePage()
-elif selected_page == "4.0 GPA/CGPA Calculator":
+elif menu == "4.0 GPA/CGPA Calculator":
     st.markdown("""
         <style>
             .main {
@@ -122,7 +123,7 @@ elif selected_page == "4.0 GPA/CGPA Calculator":
     """, unsafe_allow_html=True)
 
 
-elif selected_page == "5.0 GPA/CGPA Calculator":
+elif menu == "5.0 GPA/CGPA Calculator":
     st.markdown("""
         <style>
             .main {

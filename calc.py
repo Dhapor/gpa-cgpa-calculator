@@ -55,7 +55,7 @@ elif menu == "4.0 GPA/CGPA Calculator":
     """, unsafe_allow_html=True)
 
     # 📌 2. Title
-    st.title("🎓 4.0 GPA & CGPA Calculator")
+    st.header("🎓 4.0 GPA & CGPA Calculator")
     def get_grade_point(score):
         if score >= 85:
             return 'A', 4.0
@@ -154,7 +154,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
     """, unsafe_allow_html=True)
 
     # 📌 2. Title
-    st.title("🎓 5.0 GPA & CGPA Calculator")
+    st.header("🎓 5.0 GPA & CGPA Calculator")
 
     # 🧠 3. Helper Function
     def get_grade_point(score):

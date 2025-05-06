@@ -3,6 +3,23 @@ import streamlit as st
 
 st.set_page_config(page_title="GPA/CGPA Calculator", layout="centered")
 
+
+st.markdown("""
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+    <style>
+        html, body, [class*="css"]  {
+            font-family: 'Montserrat', sans-serif;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+menu = st.selectbox(
+    "Choose a page:",
+    ["Home", "4.0 GPA/CGPA Calculator", "5.0 GPA/CGPA Calculator"]
+)
+
+
+
 menu = st.selectbox(
     "Choose a page:",
     ["Home", "4.0 GPA/CGPA Calculator", "5.0 GPA/CGPA Calculator"]

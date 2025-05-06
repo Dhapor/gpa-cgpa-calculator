@@ -154,7 +154,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
     """, unsafe_allow_html=True)
 
     # 📌 2. Title
-    st.subtitle("🎓 5.0 GPA & CGPA Calculator")
+    st.title("🎓 5.0 GPA & CGPA Calculator")
 
     # 🧠 3. Helper Function
     def get_grade_point(score):

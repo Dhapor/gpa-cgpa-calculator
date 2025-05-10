@@ -1,8 +1,7 @@
-# 💄 1. Custom CSS for Styling
 import streamlit as st
-import json
-from io import StringIO
+from fpdf import FPDF
 
+# Set up page
 st.set_page_config(page_title="🎓 GPA/CGPA Calculator", layout="centered")
 
 # Adding custom CSS for mobile-friendly font size
@@ -20,6 +19,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Menu options
 menu = st.selectbox(
     "Choose a page:",
     ["Home", "4.0 GPA/CGPA Calculator", "5.0 GPA/CGPA Calculator"]
@@ -34,9 +34,36 @@ def HomePage():
     <p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria | GPA/CGPA App</p>
     """, unsafe_allow_html=True)
 
+# PDF generation function
+def generate_pdf(results):
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    
+    pdf.set_font("Arial", size=12)
+    
+    # Title
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(200, 10, "GPA/CGPA Calculation Result", ln=True, align="C")
+    
+    # Add the results to the PDF
+    pdf.ln(10)  # Line break
+    pdf.set_font("Arial", size=12)
+    
+    for line in results:
+        pdf.cell(200, 10, txt=line, ln=True, align="L")
+    
+    # Save the PDF to a file
+    pdf_file_path = "/mnt/data/gpa_cgpa_result.pdf"
+    pdf.output(pdf_file_path)
+    
+    return pdf_file_path
+
+# Home page
 if menu == "Home":
     HomePage()
 
+# 4.0 GPA/CGPA Calculator
 elif menu == "4.0 GPA/CGPA Calculator":
     st.header("🎓 4.0 GPA & CGPA Calculator")
 
@@ -92,12 +119,25 @@ elif menu == "4.0 GPA/CGPA Calculator":
 
     if total_units_all > 0:
         cgpa = total_weighted_points_all / total_units_all
+        sem = total_semesters
+        results = [
+            f"Total Sessions: {sessions}",
+            f"Total Semesters: {sem}",
+            f"Total Units: {total_units_all}",
+            f"Final CGPA: {round(cgpa, 2)}"
+        ]
+        
+        # Generate PDF
+        pdf_file_path = generate_pdf(results)
+        
+        # Provide download link
         st.markdown("---")
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")
-        st.markdown(f"**Total Semesters:** {total_semesters}")
+        st.markdown(f"**Total Semesters:** {sem}")
         st.markdown(f"**Total Units:** {total_units_all}")
         st.markdown(f"**Final CGPA:** `{round(cgpa, 2)}`")
+        st.markdown(f"[Download your GPA/CGPA result as a PDF here]({pdf_file_path})")
     else:
         st.error("❌ No valid GPA data to compute CGPA.")
 
@@ -106,6 +146,7 @@ elif menu == "4.0 GPA/CGPA Calculator":
     <p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria | GPA/CGPA App</p>
     """, unsafe_allow_html=True)
 
+# 5.0 GPA/CGPA Calculator
 elif menu == "5.0 GPA/CGPA Calculator":
     st.header("🎓 5.0 GPA & CGPA Calculator")
 
@@ -162,17 +203,23 @@ elif menu == "5.0 GPA/CGPA Calculator":
 
     if total_units_all > 0:
         cgpa = total_weighted_points_all / total_units_all
-        sem = semesters * sessions
+        sem = total_semesters
+        results = [
+            f"Total Sessions: {sessions}",
+            f"Total Semesters: {sem}",
+            f"Total Units: {total_units_all}",
+            f"Final CGPA: {round(cgpa, 2)}"
+        ]
+        
+        # Generate PDF
+        pdf_file_path = generate_pdf(results)
+        
+        # Provide download link
         st.markdown("---")
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")
-        st.markdown(f"**Total Semesters:** {total_semesters}")
+        st.markdown(f"**Total Semesters:** {sem}")
         st.markdown(f"**Total Units:** {total_units_all}")
         st.markdown(f"**Final CGPA:** `{round(cgpa, 2)}`")
-    else:
-        st.error("❌ No valid GPA data to compute CGPA.")
-
-    st.markdown("""
-    <hr>
-    <p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria | GPA/CGPA App</p>
-    """, unsafe_allow_html=True)
+        st.markdown(f"[Download your GPA/CGPA result as a PDF here]({pdf_file_path})")
+    else

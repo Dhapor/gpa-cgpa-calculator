@@ -110,7 +110,7 @@ elif menu == "4.0 GPA/CGPA Calculator":
         result_txt.write("📘 GPA & CGPA Report\n")
         result_txt.write("-" * 30 + "\n")
     
-       for semester in session_data:
+        for semester in session_data:
             s = semester["session"]
             sem = semester["semester"]
             result_txt.write(f"\nSession {s} - Semester {sem}\n")

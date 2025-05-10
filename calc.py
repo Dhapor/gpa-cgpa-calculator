@@ -241,8 +241,8 @@ elif menu == "5.0 GPA/CGPA Calculator":
             sem = semester["semester"]
             result_txt.write(f"\nSession {s} - Semester {sem}\n")
             result_txt.write("-" * 30 + "\n")
-            result_txt.write(f"Total Units: {semester['total_units']}\n")
-            result_txt.write(f"Total Weighted Points: {semester['total_weighted_points']}\n")
+            for course in semester["courses"]:
+                result_txt.write(f"{course['name']} | Grade: {course['grade']} | Unit: {course['unit']} | GP: {course['point']}\n")
             gpa = semester["total_weighted_points"] / semester["total_units"] if semester["total_units"] else 0
             result_txt.write(f"Semester GPA: {round(gpa, 2)}\n")
     

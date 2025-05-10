@@ -2,6 +2,10 @@ import os
 import streamlit as st
 from io import StringIO
 
+
+# App config
+st.set_page_config(page_title="🎓 GPA/CGPA Calculator", layout="centered")
+
 # Function to get current user count from a file
 def get_user_count(file_path='user_count.txt'):
     try:
@@ -32,8 +36,7 @@ else:
 # Display the user count at the bottom of the app (optional, you can change where to display this)
 st.markdown(f"<p style='text-align:center; color:gray;'>👥 <strong>Total Users:</strong> {count}</p>", unsafe_allow_html=True)
 
-# App config
-st.set_page_config(page_title="🎓 GPA/CGPA Calculator", layout="centered")
+
 
 # Custom styling
 st.markdown("""

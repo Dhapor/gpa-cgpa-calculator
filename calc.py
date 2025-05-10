@@ -1,4 +1,3 @@
-# 💄 1. Custom CSS for Styling
 import streamlit as st
 from io import StringIO
 
@@ -89,7 +88,7 @@ elif menu == "4.0 GPA/CGPA Calculator":
                 total_weighted_points_all += total_weighted_points
             else:
                 st.error("❌ No valid course entries for this semester.")
-            session_data.append(semester)
+            session_data.append({"session": s, "semester": sem, "total_units": total_units, "total_weighted_points": total_weighted_points})
 
     if total_units_all > 0:
         cgpa = total_weighted_points_all / total_units_all
@@ -113,8 +112,8 @@ elif menu == "4.0 GPA/CGPA Calculator":
             sem = semester["semester"]
             result_txt.write(f"\nSession {s} - Semester {sem}\n")
             result_txt.write("-" * 30 + "\n")
-            for course in semester["courses"]:
-                result_txt.write(f"{course['name']} | Grade: {course['grade']} | Unit: {course['unit']} | GP: {course['point']}\n")
+            result_txt.write(f"Total Units: {semester['total_units']}\n")
+            result_txt.write(f"Total Weighted Points: {semester['total_weighted_points']}\n")
             gpa = semester["total_weighted_points"] / semester["total_units"] if semester["total_units"] else 0
             result_txt.write(f"Semester GPA: {round(gpa, 2)}\n")
     
@@ -144,6 +143,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
     total_units_all = 0
     total_weighted_points_all = 0
     total_semesters = 0
+    session_data = []
 
     sessions = st.number_input("How many sessions?", min_value=1, step=1)
 
@@ -182,11 +182,10 @@ elif menu == "5.0 GPA/CGPA Calculator":
                 total_weighted_points_all += total_weighted_points
             else:
                 st.error("❌ No valid course entries for this semester.")
-            session_data.append(semester)
+            session_data.append({"session": s, "semester": sem, "total_units": total_units, "total_weighted_points": total_weighted_points})
 
     if total_units_all > 0:
         cgpa = total_weighted_points_all / total_units_all
-        sem = semesters * sessions
         st.markdown("---")
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")
@@ -207,8 +206,8 @@ elif menu == "5.0 GPA/CGPA Calculator":
             sem = semester["semester"]
             result_txt.write(f"\nSession {s} - Semester {sem}\n")
             result_txt.write("-" * 30 + "\n")
-            for course in semester["courses"]:
-                result_txt.write(f"{course['name']} | Grade: {course['grade']} | Unit: {course['unit']} | GP: {course['point']}\n")
+            result_txt.write(f"Total Units: {semester['total_units']}\n")
+            result_txt.write(f"Total Weighted Points: {semester['total_weighted_points']}\n")
             gpa = semester["total_weighted_points"] / semester["total_units"] if semester["total_units"] else 0
             result_txt.write(f"Semester GPA: {round(gpa, 2)}\n")
     

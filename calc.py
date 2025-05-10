@@ -3,9 +3,6 @@ import requests
 import streamlit as st
 from io import StringIO
 
-# GitHub Repository Details
-import streamlit as st
-import requests
 
 # Load secrets
 GITHUB_TOKEN = st.secrets["github"]["token"]
@@ -14,50 +11,50 @@ REPO_NAME = st.secrets["github"]["repo"]
 FILE_PATH = st.secrets["github"]["file_path"]
 
 
-# Function to get current user count from the file in GitHub repository
+# Function to get current user count from GitHub
 def get_user_count():
     url = f"https://api.github.com/repos/{USERNAME}/{REPO_NAME}/contents/{FILE_PATH}"
     headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-    
+
     response = requests.get(url, headers=headers)
-    
+
     if response.status_code == 200:
         content = response.json()['content']
-        file_content = requests.utils.unquote(content)
-        return int(file_content.strip())
+        decoded_content = base64.b64decode(content).decode('utf-8')
+        return int(decoded_content.strip())
     else:
-        # Create a new file if not found (first time visit)
+        # If file doesn't exist, treat it as 0
         return 0
 
-# Function to update the user count in GitHub repository
+# Function to increment and update user count in GitHub
 def increment_user_count():
     current_count = get_user_count()
     updated_count = current_count + 1
-    
-    # Get the file sha for updating
+
     url = f"https://api.github.com/repos/{USERNAME}/{REPO_NAME}/contents/{FILE_PATH}"
     headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-    
+
     response = requests.get(url, headers=headers)
-    file_sha = response.json()['sha']
-    
-    # Update the file with the new user count
-    updated_content = str(updated_count)
-    encoded_content = requests.utils.quote(updated_content)
-    
+    sha = response.json().get('sha') if response.status_code == 200 else None
+
+    # Encode new count
+    encoded_content = base64.b64encode(str(updated_count).encode()).decode()
+
     data = {
         'message': 'Update user count',
-        'sha': file_sha,
         'content': encoded_content,
-        'branch': 'main'  # Change this to your default branch if it's different
+        'branch': 'main'
     }
-    
+
+    if sha:
+        data['sha'] = sha  # Include SHA only if file exists
+
     update_response = requests.put(url, headers=headers, json=data)
-    
-    if update_response.status_code == 200:
+
+    if update_response.status_code in [200, 201]:
         return updated_count
     else:
-        st.error(f"Failed to update user count: {update_response.text}")
+        st.error(f"❌ Failed to update user count: {update_response.status_code}\n{update_response.text}")
         return current_count
 
 # Only increment once per user session

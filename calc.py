@@ -159,9 +159,12 @@ def GPACalculator(scale_name, grade_map):
 
         st.download_button("📄 Download Readable Report (TXT)", result_txt.getvalue(), "gpa_report.txt", "text/plain")
 
-    st.markdown(f"<p style='text-align:center; color:gray;'>👥 <strong>Total Users:</strong> {count}</p>", unsafe_allow_html=True)
+    
 
     st.markdown("<hr><p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria</p>", unsafe_allow_html=True)
+
+
+st.markdown(f"<p style='text-align:center; color:gray;'>👥 <strong>Total Users:</strong> {count}</p>", unsafe_allow_html=True)
 
 # ------------------ ROUTING -----------------------
 if menu == "Home":

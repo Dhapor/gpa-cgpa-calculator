@@ -20,11 +20,17 @@ session_data = []
 total_units_all = 0
 total_weighted_points_all = 0
 
-# Load if available
+
 if uploaded_file is not None:
     uploaded_data = json.load(uploaded_file)
     session_data = uploaded_data.get("session_data", [])
     st.success("✅ Session data loaded successfully!")
+
+
+    for semester in session_data:
+        total_units_all += semester.get("total_units", 0)
+        total_weighted_points_all += semester.get("total_weighted_points", 0)
+
 else:
     sessions = st.number_input("How many sessions?", min_value=1, step=1)
     for s in range(1, sessions + 1):

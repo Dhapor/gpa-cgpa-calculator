@@ -88,10 +88,11 @@ elif menu == "4.0 GPA/CGPA Calculator":
 
     if total_units_all > 0:
         cgpa = total_weighted_points_all / total_units_all
+        sem = semesters * sessions
         st.markdown("---")
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")
-        st.markdown(f"**Total Semesters:** {semesters}")
+        st.markdown(f"**Total Semesters:** {sem}")
         st.markdown(f"**Final CGPA:** `{round(cgpa, 2)}`")
     else:
         st.error("❌ No valid GPA data to compute CGPA.")
@@ -121,7 +122,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
     for s in range(1, sessions + 1):
         st.subheader(f"📘 Session {s}")
         semesters = st.number_input(f"How many semesters in session {s}?", min_value=1, step=1, key=f"sem_{s}")
-        sem = semesters * sessions
+        
         
         for sem in range(1, semesters + 1):
             st.markdown(f"### 📗 Semester {sem}")
@@ -156,6 +157,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
 
     if total_units_all > 0:
         cgpa = total_weighted_points_all / total_units_all
+        sem = semesters * sessions
         st.markdown("---")
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")

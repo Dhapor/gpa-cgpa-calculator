@@ -94,6 +94,7 @@ elif menu == "4.0 GPA/CGPA Calculator":
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")
         st.markdown(f"**Total Semesters:** {total_semesters}")
+        st.markdown(f"**Total Units:** {total_units_all}")
         st.markdown(f"**Final CGPA:** `{round(cgpa, 2)}`")
     else:
         st.error("❌ No valid GPA data to compute CGPA.")
@@ -164,6 +165,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")
         st.markdown(f"**Total Semesters:** {total_semesters}")
+        st.markdown(f"**Total Units:** {total_units_all}")
         st.markdown(f"**Final CGPA:** `{round(cgpa, 2)}`")
     else:
         st.error("❌ No valid GPA data to compute CGPA.")

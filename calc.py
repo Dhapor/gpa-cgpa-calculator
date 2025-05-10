@@ -246,4 +246,14 @@ elif menu == "5.0 GPA/CGPA Calculator":
             gpa = semester["total_weighted_points"] / semester["total_units"] if semester["total_units"] else 0
             result_txt.write(f"Semester GPA: {round(gpa, 2)}\n")
     
-        result_txt.write("\n🎯 Final CGPA: {:.2f}\n".format(cgpa if total_units_all > 0 else 
+                result_txt.write("\n🎯 Final CGPA: {:.2f}\n".format(cgpa if total_units_all > 0 else 0))
+        result_txt.write("-" * 30 + "\n")
+        result_txt.write("GPA/CGPA App by Datapsalm & Victoria\n")
+    
+        st.download_button("📄 Download Readable Report (TXT)", result_txt.getvalue(), file_name="gpa_report.txt", mime="text/plain")
+
+    st.markdown("""  
+    <hr>  
+    <p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria | GPA/CGPA App</p>  
+    """, unsafe_allow_html=True)
+ 

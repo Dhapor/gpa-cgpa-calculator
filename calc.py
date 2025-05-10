@@ -225,8 +225,8 @@ elif menu == "5.0 GPA/CGPA Calculator":
     else:
         st.error("❌ No valid GPA data to compute CGPA.")
 
-st.markdown("""
-<hr>
-<p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria | GPA/CGPA App</p>
-""", unsafe_allow_html=True)
+    st.markdown("""
+    <hr>
+    <p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria | GPA/CGPA App</p>
+    """, unsafe_allow_html=True)
 

@@ -1,5 +1,36 @@
+import os
 import streamlit as st
 from io import StringIO
+
+# Function to get current user count from a file
+def get_user_count(file_path='user_count.txt'):
+    try:
+        if not os.path.exists(file_path):
+            with open(file_path, 'w') as f:
+                f.write("0")
+        with open(file_path, 'r') as f:
+            count = int(f.read().strip())
+        return count
+    except:
+        return 0
+
+# Function to increment and update the user count
+def increment_user_count(file_path='user_count.txt'):
+    count = get_user_count(file_path)
+    count += 1
+    with open(file_path, 'w') as f:
+        f.write(str(count))
+    return count
+
+# Only increment once per user session
+if 'user_tracked' not in st.session_state:
+    count = increment_user_count()  # Increment user count
+    st.session_state['user_tracked'] = True  # Mark that user has been tracked
+else:
+    count = get_user_count()  # If already tracked, just get the count
+
+# Display the user count at the bottom of the app (optional, you can change where to display this)
+st.markdown(f"<p style='text-align:center; color:gray;'>👥 <strong>Total Users:</strong> {count}</p>", unsafe_allow_html=True)
 
 # App config
 st.set_page_config(page_title="🎓 GPA/CGPA Calculator", layout="centered")

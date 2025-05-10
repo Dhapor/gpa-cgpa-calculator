@@ -1,39 +1,82 @@
 import os
+import requests
 import streamlit as st
 from io import StringIO
 
+# GitHub Repository Details
+import streamlit as st
+import requests
+
+# Load secrets
+GITHUB_TOKEN = st.secrets["github"]["token"]
+USERNAME = st.secrets["github"]["username"]
+REPO_NAME = st.secrets["github"]["repo"]
+FILE_PATH = st.secrets["github"]["file_path"]
+
+
+# Function to get current user count from the file in GitHub repository
+def get_user_count():
+    url = f"https://api.github.com/repos/{USERNAME}/{REPO_NAME}/contents/{FILE_PATH}"
+    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
+    
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        content = response.json()['content']
+        file_content = requests.utils.unquote(content)
+        return int(file_content.strip())
+    else:
+        # Create a new file if not found (first time visit)
+        return 0
+
+# Function to update the user count in GitHub repository
+def increment_user_count():
+    current_count = get_user_count()
+    updated_count = current_count + 1
+    
+    # Get the file sha for updating
+    url = f"https://api.github.com/repos/{USERNAME}/{REPO_NAME}/contents/{FILE_PATH}"
+    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
+    
+    response = requests.get(url, headers=headers)
+    file_sha = response.json()['sha']
+    
+    # Update the file with the new user count
+    updated_content = str(updated_count)
+    encoded_content = requests.utils.quote(updated_content)
+    
+    data = {
+        'message': 'Update user count',
+        'sha': file_sha,
+        'content': encoded_content,
+        'branch': 'main'  # Change this to your default branch if it's different
+    }
+    
+    update_response = requests.put(url, headers=headers, json=data)
+    
+    if update_response.status_code == 200:
+        return updated_count
+    else:
+        st.error(f"Failed to update user count: {update_response.text}")
+        return current_count
+
+# Only increment once per user session
+if 'user_tracked' not in st.session_state:
+    count = increment_user_count()
+    st.session_state['user_tracked'] = True
+else:
+    count = get_user_count()
+
+# Display at bottom of the app
+st.markdown("---")
+st.markdown(f"<p style='text-align:center; color:gray;'>👥 <strong>Total Users:</strong> {count}</p>", unsafe_allow_html=True)
+
+# Rest of your app code below...
 
 # App config
 st.set_page_config(page_title="🎓 GPA/CGPA Calculator", layout="centered")
 
-
-def get_user_count(file_path='user_count.txt'):
-    try:
-        if not os.path.exists(file_path):
-            with open(file_path, 'w') as f:
-                f.write("0")
-        with open(file_path, 'r') as f:
-            count = int(f.read().strip())
-        return count
-    except:
-        return 0
-
-
-def increment_user_count(file_path='user_count.txt'):
-    count = get_user_count(file_path)
-    count += 1
-    with open(file_path, 'w') as f:
-        f.write(str(count))
-    return count
-
-
-if 'user_tracked' not in st.session_state:
-    count = increment_user_count()  # Increment user count
-    st.session_state['user_tracked'] = True  # Mark that user has been tracked
-else:
-    count = get_user_count()  # If already tracked, just get the count
-
-
+# Custom styling
 st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
     <style>
@@ -56,8 +99,6 @@ def HomePage():
     st.markdown("<h5 style='text-align: center;'>Smart GPA & CGPA Calculator for University Students</h5>", unsafe_allow_html=True)
     st.markdown("<p class='mobile-text'>An interactive GPA & CGPA calculator using the Nigerian grading system. Built with Streamlit, it lets students compute GPA and CGPA easily across multiple sessions and semesters.</p>", unsafe_allow_html=True)
     st.image("smiling-woman-with-afro-posing-pink-sweater.jpg", width=800)
-    st.markdown("<hr>",unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align:center;'>👥 <strong>Total Users:</strong> {count}</p>", unsafe_allow_html=True)
     st.markdown("<hr><p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria</p>", unsafe_allow_html=True)
 
 # -------------------- GPA/CGPA CALCULATOR FUNCTION ---------------------
@@ -161,12 +202,7 @@ def GPACalculator(scale_name, grade_map):
 
         st.download_button("📄 Download Readable Report (TXT)", result_txt.getvalue(), "gpa_report.txt", "text/plain")
 
-    st.markdown("<hr>",unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align:center; color:gray;'>👥 <strong>Total Users:</strong> {count}</p>", unsafe_allow_html=True)
-
     st.markdown("<hr><p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria</p>", unsafe_allow_html=True)
-
-
 
 # ------------------ ROUTING -----------------------
 if menu == "Home":

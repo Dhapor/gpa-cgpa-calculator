@@ -125,7 +125,7 @@ elif menu == "4.0 GPA/CGPA Calculator":
                 result_txt.write(f"{course['name']} | Grade: {course['grade']} | Unit: {course['unit']} | GP: {course['point']}\n")
             gpa = semester["total_weighted_points"] / semester["total_units"] if semester["total_units"] else 0
             result_txt.write(f"Semester GPA: {round(gpa, 2)}\n")
-            total_courses += len(semester["courses"])
+            # total_courses += len(semester["courses"])
 
         # Calculate the final CGPA
         cgpa = total_weighted_points_all / total_units_all if total_units_all > 0 else 0

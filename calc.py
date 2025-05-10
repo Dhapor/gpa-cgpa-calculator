@@ -49,6 +49,7 @@ elif menu == "4.0 GPA/CGPA Calculator":
     total_units_all = 0
     total_weighted_points_all = 0
     total_semesters = 0
+    total_courses = 0
     session_data = []
 
     sessions = st.number_input("How many sessions?", min_value=1, step=1)
@@ -61,6 +62,7 @@ elif menu == "4.0 GPA/CGPA Calculator":
         for sem in range(1, semesters + 1):
             st.markdown(f"### 📗 Semester {sem}")
             num_courses = st.number_input(f"Number of courses:", min_value=1, step=1, key=f"course_{s}_{sem}")
+            total_courses += num_courses
             
             total_units = 0
             total_weighted_points = 0
@@ -96,6 +98,7 @@ elif menu == "4.0 GPA/CGPA Calculator":
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")
         st.markdown(f"**Total Semesters:** {total_semesters}")
+        st.markdown(f"**Total Courses:** {total_courses}")
         st.markdown(f"**Total Units:** {total_units_all}")
         st.markdown(f"**Final CGPA:** `{round(cgpa, 2)}`")
     else:
@@ -143,6 +146,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
     total_units_all = 0
     total_weighted_points_all = 0
     total_semesters = 0
+    total_courses = 0
     session_data = []
 
     sessions = st.number_input("How many sessions?", min_value=1, step=1)
@@ -155,6 +159,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
         for sem in range(1, semesters + 1):
             st.markdown(f"### 📗 Semester {sem}")
             num_courses = st.number_input(f"Number of courses:", min_value=1, step=1, key=f"course_{s}_{sem}")
+            total_courses += num_courses
             
             total_units = 0
             total_weighted_points = 0
@@ -190,6 +195,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")
         st.markdown(f"**Total Semesters:** {total_semesters}")
+        st.markdown(f"**Total Courses:** {total_courses}")
         st.markdown(f"**Total Units:** {total_units_all}")
         st.markdown(f"**Final CGPA:** `{round(cgpa, 2)}`")
     else:

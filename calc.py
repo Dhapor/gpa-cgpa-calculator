@@ -56,7 +56,7 @@ def HomePage():
     st.markdown("<h5 style='text-align: center;'>Smart GPA & CGPA Calculator for University Students</h5>", unsafe_allow_html=True)
     st.markdown("<p class='mobile-text'>An interactive GPA & CGPA calculator using the Nigerian grading system. Built with Streamlit, it lets students compute GPA and CGPA easily across multiple sessions and semesters.</p>", unsafe_allow_html=True)
     st.image("smiling-woman-with-afro-posing-pink-sweater.jpg", width=800)
-    st.markdown("<br>"unsafe_allow_html=True)
+    st.markdown("<br>",unsafe_allow_html=True)
     st.markdown(f"<p style='text-align:center;'>👥 <strong>Total Users:</strong> {count}</p>", unsafe_allow_html=True)
     st.markdown("<hr><p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria</p>", unsafe_allow_html=True)
 
@@ -161,7 +161,7 @@ def GPACalculator(scale_name, grade_map):
 
         st.download_button("📄 Download Readable Report (TXT)", result_txt.getvalue(), "gpa_report.txt", "text/plain")
 
-    
+    st.markdown("<br>",unsafe_allow_html=True)
     st.markdown(f"<p style='text-align:center; color:gray;'>👥 <strong>Total Users:</strong> {count}</p>", unsafe_allow_html=True)
 
     st.markdown("<hr><p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria</p>", unsafe_allow_html=True)

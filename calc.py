@@ -5,6 +5,10 @@ import streamlit as st
 from io import StringIO
 
 
+
+# App config
+st.set_page_config(page_title="🎓 GPA/CGPA Calculator", layout="centered")
+
 # Load secrets
 GITHUB_TOKEN = st.secrets["github"]["token"]
 USERNAME = st.secrets["github"]["username"]
@@ -71,8 +75,7 @@ st.markdown(f"<p style='text-align:center; color:gray;'>👥 <strong>Total Users
 
 # Rest of your app code below...
 
-# App config
-st.set_page_config(page_title="🎓 GPA/CGPA Calculator", layout="centered")
+
 
 # Custom styling
 st.markdown("""

@@ -48,13 +48,15 @@ elif menu == "4.0 GPA/CGPA Calculator":
 
     total_units_all = 0
     total_weighted_points_all = 0
+    total_semesters = 0
 
     sessions = st.number_input("How many sessions?", min_value=1, step=1)
 
     for s in range(1, sessions + 1):
         st.subheader(f"📘 Session {s}")
         semesters = st.number_input(f"How many semesters in session {s}?", min_value=1, step=1, key=f"sem_{s}")
-
+        total_semesters += semesters
+        
         for sem in range(1, semesters + 1):
             st.markdown(f"### 📗 Semester {sem}")
             num_courses = st.number_input(f"Number of courses:", min_value=1, step=1, key=f"course_{s}_{sem}")
@@ -88,11 +90,10 @@ elif menu == "4.0 GPA/CGPA Calculator":
 
     if total_units_all > 0:
         cgpa = total_weighted_points_all / total_units_all
-        sem = semesters * sessions
         st.markdown("---")
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")
-        st.markdown(f"**Total Semesters:** {sem}")
+        st.markdown(f"**Total Semesters:** {total_semesters}")
         st.markdown(f"**Final CGPA:** `{round(cgpa, 2)}`")
     else:
         st.error("❌ No valid GPA data to compute CGPA.")
@@ -116,13 +117,14 @@ elif menu == "5.0 GPA/CGPA Calculator":
 
     total_units_all = 0
     total_weighted_points_all = 0
+    total_semesters = 0
 
     sessions = st.number_input("How many sessions?", min_value=1, step=1)
 
     for s in range(1, sessions + 1):
         st.subheader(f"📘 Session {s}")
         semesters = st.number_input(f"How many semesters in session {s}?", min_value=1, step=1, key=f"sem_{s}")
-        
+        total_semesters += semesters
         
         for sem in range(1, semesters + 1):
             st.markdown(f"### 📗 Semester {sem}")
@@ -161,7 +163,7 @@ elif menu == "5.0 GPA/CGPA Calculator":
         st.markdown("---")
         st.subheader("📌 Final Summary")
         st.markdown(f"**Total Sessions:** {sessions}")
-        st.markdown(f"**Total Semesters:** {sem}")
+        st.markdown(f"**Total Semesters:** {total_semesters}")
         st.markdown(f"**Final CGPA:** `{round(cgpa, 2)}`")
     else:
         st.error("❌ No valid GPA data to compute CGPA.")

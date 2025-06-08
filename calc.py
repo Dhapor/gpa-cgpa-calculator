@@ -29,6 +29,7 @@ def HomePage():
     st.markdown("<p class='mobile-text'>An interactive GPA & CGPA calculator using the Nigerian grading system. Built with Streamlit, it lets students compute GPA and CGPA easily across multiple sessions and semesters.</p>", unsafe_allow_html=True)
     st.image("smiling-woman-with-afro-posing-pink-sweater.jpg", width=800)
     st.markdown("<hr><p style='text-align: center;'>Built with ❤️ by Datapsalm & Victoria</p>", unsafe_allow_html=True)
+    st.markdown("<hr><p style='text-align: center;'>datapsalm@gmail.com</p>", unsafe_allow_html=True)
 
 # -------------------- GPA/CGPA CALCULATOR FUNCTION ---------------------
 def GPACalculator(scale_name, grade_map):

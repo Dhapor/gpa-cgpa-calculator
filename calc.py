@@ -1,10 +1,9 @@
 from io import StringIO
 import streamlit as st
-import sqlite3
 import hashlib
 import datetime
-import json
 import requests
+import json
 
 # App config
 st.set_page_config(page_title="GPA/CGPA Calculator", layout="centered")
@@ -38,53 +37,42 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ==================== DATABASE SETUP ====================
-def init_db():
-    """Initialize SQLite database with required tables"""
-    conn = sqlite3.connect('cgpa_calculator.db')
-    c = conn.cursor()
+# ==================== SUPABASE CONFIGURATION ====================
+try:
+    SUPABASE_URL = st.secrets["SUPABASE_URL"]
+    SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+    SUPABASE_CONFIGURED = True
+except:
+    st.error("⚠️ Supabase is not configured. Please add SUPABASE_URL and SUPABASE_KEY to your Streamlit secrets.")
+    SUPABASE_CONFIGURED = False
+    st.stop()
+
+HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+}
+
+# ==================== SUPABASE HELPER FUNCTIONS ====================
+def supabase_request(method, endpoint, data=None, params=None):
+    """Make a request to Supabase REST API"""
+    url = f"{SUPABASE_URL}/rest/v1/{endpoint}"
     
-    # Users table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    # Semesters table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS semesters (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            academic_year TEXT NOT NULL,
-            semester_name TEXT NOT NULL,
-            gpa REAL NOT NULL,
-            total_units INTEGER NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-    ''')
-    
-    # Courses table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS courses (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            semester_id INTEGER NOT NULL,
-            course_name TEXT NOT NULL,
-            course_code TEXT,
-            grade TEXT NOT NULL,
-            units INTEGER NOT NULL,
-            grade_point REAL NOT NULL,
-            FOREIGN KEY (semester_id) REFERENCES semesters(id)
-        )
-    ''')
-    
-    conn.commit()
-    conn.close()
+    try:
+        if method == "GET":
+            response = requests.get(url, headers=HEADERS, params=params, timeout=10)
+        elif method == "POST":
+            response = requests.post(url, headers=HEADERS, json=data, timeout=10)
+        elif method == "PATCH":
+            response = requests.patch(url, headers=HEADERS, json=data, params=params, timeout=10)
+        elif method == "DELETE":
+            response = requests.delete(url, headers=HEADERS, params=params, timeout=10)
+        
+        response.raise_for_status()
+        return response.json() if response.text else []
+    except requests.exceptions.RequestException as e:
+        st.error(f"Database error: {str(e)}")
+        return None
 
 # ==================== AUTHENTICATION FUNCTIONS ====================
 def hash_password(password):
@@ -92,152 +80,143 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def create_user(username, email, password):
-    """Create a new user account"""
+    """Create a new user account in Supabase"""
     try:
-        conn = sqlite3.connect('cgpa_calculator.db')
-        c = conn.cursor()
         password_hash = hash_password(password)
-        c.execute('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-                  (username, email, password_hash))
-        conn.commit()
-        conn.close()
-        return True, "Account created successfully!"
-    except sqlite3.IntegrityError:
-        return False, "Username or email already exists!"
+        data = {
+            "username": username,
+            "email": email,
+            "password_hash": password_hash
+        }
+        
+        result = supabase_request("POST", "users", data)
+        
+        if result:
+            return True, "Account created successfully!"
+        else:
+            return False, "Username or email already exists!"
     except Exception as e:
         return False, f"Error: {str(e)}"
 
 def verify_user(username, password):
     """Verify user credentials"""
-    conn = sqlite3.connect('cgpa_calculator.db')
-    c = conn.cursor()
-    password_hash = hash_password(password)
-    c.execute('SELECT id, username, email FROM users WHERE username = ? AND password_hash = ?',
-              (username, password_hash))
-    user = c.fetchone()
-    conn.close()
-    return user
-
-def get_user_id(username):
-    """Get user ID from username"""
-    conn = sqlite3.connect('cgpa_calculator.db')
-    c = conn.cursor()
-    c.execute('SELECT id FROM users WHERE username = ?', (username,))
-    result = c.fetchone()
-    conn.close()
-    return result[0] if result else None
+    try:
+        password_hash = hash_password(password)
+        
+        # Query user with matching username and password
+        params = {
+            "username": f"eq.{username}",
+            "password_hash": f"eq.{password_hash}",
+            "select": "id,username,email"
+        }
+        
+        result = supabase_request("GET", "users", params=params)
+        
+        if result and len(result) > 0:
+            user = result[0]
+            return (user['id'], user['username'], user['email'])
+        return None
+    except Exception as e:
+        st.error(f"Login error: {str(e)}")
+        return None
 
 # ==================== DATA STORAGE FUNCTIONS ====================
 def save_semester_data(user_id, academic_year, semester_name, gpa, total_units, courses):
-    """Save semester data to database"""
+    """Save semester data to Supabase"""
     try:
-        conn = sqlite3.connect('cgpa_calculator.db')
-        c = conn.cursor()
-        
         # Insert semester
-        c.execute('''
-            INSERT INTO semesters (user_id, academic_year, semester_name, gpa, total_units)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (user_id, academic_year, semester_name, gpa, total_units))
+        semester_data = {
+            "user_id": user_id,
+            "academic_year": academic_year,
+            "semester_name": semester_name,
+            "gpa": float(gpa),
+            "total_units": int(total_units)
+        }
         
-        semester_id = c.lastrowid
+        semester_result = supabase_request("POST", "semesters", semester_data)
+        
+        if not semester_result or len(semester_result) == 0:
+            return False, "Failed to save semester"
+        
+        semester_id = semester_result[0]['id']
         
         # Insert courses
         for course in courses:
-            c.execute('''
-                INSERT INTO courses (semester_id, course_name, course_code, grade, units, grade_point)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (semester_id, course['name'], course.get('code', ''), 
-                  course['grade'], course['unit'], course['point']))
+            course_data = {
+                "semester_id": semester_id,
+                "course_name": course['name'],
+                "course_code": course.get('code', ''),
+                "grade": course['grade'],
+                "units": int(course['unit']),
+                "grade_point": float(course['point'])
+            }
+            supabase_request("POST", "courses", course_data)
         
-        conn.commit()
-        conn.close()
         return True, "Semester data saved successfully!"
     except Exception as e:
         return False, f"Error saving data: {str(e)}"
 
 def get_user_semesters(user_id):
     """Retrieve all semesters for a user"""
-    conn = sqlite3.connect('cgpa_calculator.db')
-    c = conn.cursor()
-    c.execute('''
-        SELECT id, academic_year, semester_name, gpa, total_units, created_at
-        FROM semesters
-        WHERE user_id = ?
-        ORDER BY academic_year, semester_name
-    ''', (user_id,))
-    semesters = c.fetchall()
-    conn.close()
-    return semesters
+    try:
+        params = {
+            "user_id": f"eq.{user_id}",
+            "select": "id,academic_year,semester_name,gpa,total_units,created_at",
+            "order": "academic_year,semester_name"
+        }
+        
+        result = supabase_request("GET", "semesters", params=params)
+        return result if result else []
+    except Exception as e:
+        st.error(f"Error fetching semesters: {str(e)}")
+        return []
 
 def get_semester_courses(semester_id):
     """Retrieve all courses for a semester"""
-    conn = sqlite3.connect('cgpa_calculator.db')
-    c = conn.cursor()
-    c.execute('''
-        SELECT course_name, course_code, grade, units, grade_point
-        FROM courses
-        WHERE semester_id = ?
-    ''', (semester_id,))
-    courses = c.fetchall()
-    conn.close()
-    return courses
+    try:
+        params = {
+            "semester_id": f"eq.{semester_id}",
+            "select": "course_name,course_code,grade,units,grade_point"
+        }
+        
+        result = supabase_request("GET", "courses", params=params)
+        return result if result else []
+    except Exception as e:
+        st.error(f"Error fetching courses: {str(e)}")
+        return []
 
 def calculate_overall_cgpa(user_id):
     """Calculate overall CGPA from all saved semesters"""
-    conn = sqlite3.connect('cgpa_calculator.db')
-    c = conn.cursor()
-    c.execute('''
-        SELECT SUM(gpa * total_units), SUM(total_units)
-        FROM semesters
-        WHERE user_id = ?
-    ''', (user_id,))
-    result = c.fetchone()
-    conn.close()
-    
-    if result[0] and result[1]:
-        return result[0] / result[1]
-    return 0.0
-
-# ==================== USAGE TRACKING (OPTIONAL) ====================
-def log_activity(action, page):
-    """
-    Log user activity to Supabase for analytics
-    This is completely optional and anonymous
-    """
     try:
-        # Check if Supabase credentials are configured
-        if "SUPABASE_URL" not in st.secrets or "SUPABASE_KEY" not in st.secrets:
-            return  # Skip logging if not configured
+        semesters = get_user_semesters(user_id)
         
-        SUPABASE_URL = st.secrets["SUPABASE_URL"]
-        SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+        if not semesters:
+            return 0.0
         
+        total_points = sum(sem['gpa'] * sem['total_units'] for sem in semesters)
+        total_units = sum(sem['total_units'] for sem in semesters)
+        
+        return total_points / total_units if total_units > 0 else 0.0
+    except Exception as e:
+        st.error(f"Error calculating CGPA: {str(e)}")
+        return 0.0
+
+# ==================== USAGE TRACKING ====================
+def log_activity(action, page):
+    """Log user activity to Supabase for analytics"""
+    try:
         user_type = "guest" if st.session_state.get('guest_mode', False) else "registered"
         
         data = {
             "action": action,
             "user_type": user_type,
-            "page": page,
-            "timestamp": datetime.datetime.now().isoformat()
+            "page": page
         }
         
-        headers = {
-            "apikey": SUPABASE_KEY,
-            "Content-Type": "application/json",
-            "Prefer": "return=minimal"
-        }
-        
-        # Non-blocking request with timeout
-        requests.post(
-            f"{SUPABASE_URL}/rest/v1/usage_logs",
-            json=data,
-            headers=headers,
-            timeout=2
-        )
+        # Non-blocking logging
+        supabase_request("POST", "usage_logs", data)
     except:
-        # Silent fail - logging should never break the app
-        pass
+        pass  # Silent fail - logging should never break the app
 
 # ==================== SESSION STATE INITIALIZATION ====================
 if 'logged_in' not in st.session_state:
@@ -248,9 +227,6 @@ if 'user_id' not in st.session_state:
     st.session_state.user_id = None
 if 'guest_mode' not in st.session_state:
     st.session_state.guest_mode = False
-
-# Initialize database
-init_db()
 
 # ==================== LOGIN/SIGNUP PAGE ====================
 def auth_page():
@@ -272,7 +248,7 @@ def auth_page():
         st.caption("💡 Test the calculator without creating an account. Your data won't be saved.")
     
     st.markdown("---")
-    st.markdown("<p style='text-align: center;'><strong>Want to save your records?</strong> Create an account below 👇</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'><strong>Want to save your records forever?</strong> Create an account below 👇</p>", unsafe_allow_html=True)
     
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
     
@@ -330,7 +306,7 @@ if st.session_state.logged_in:
         if st.session_state.guest_mode:
             st.markdown("### 👤 Guest Mode")
             st.info("💡 You're using the app as a guest. Your data won't be saved.")
-            st.markdown("**Want to save your records?**")
+            st.markdown("**Want to save your records forever?**")
             if st.button("📝 Create Account", use_container_width=True):
                 st.session_state.logged_in = False
                 st.session_state.guest_mode = False
@@ -344,7 +320,7 @@ if st.session_state.logged_in:
             
             # Get total units
             semesters = get_user_semesters(st.session_state.user_id)
-            total_units = sum([sem[4] for sem in semesters])
+            total_units = sum([sem['total_units'] for sem in semesters])
             st.metric("Total Units Completed", total_units)
         
         st.markdown("---")
@@ -383,7 +359,7 @@ def HomePage():
         st.info("💡 Welcome! Use the menu above to add semesters or view your records.")
     
     # Show quick stats
-    if st.session_state.logged_in:
+    if st.session_state.logged_in and not st.session_state.guest_mode:
         st.markdown("---")
         st.subheader("📊 Your Academic Summary")
         
@@ -394,7 +370,7 @@ def HomePage():
             with col1:
                 st.metric("Total Semesters", len(semesters))
             with col2:
-                total_units = sum([sem[4] for sem in semesters])
+                total_units = sum([sem['total_units'] for sem in semesters])
                 st.metric("Total Units", total_units)
             with col3:
                 overall_cgpa = calculate_overall_cgpa(st.session_state.user_id)
@@ -485,6 +461,8 @@ def GuestGPACalculator():
         )
         
         st.info("💡 Want to save this semester for future reference? Create an account to track all your semesters!")
+
+# -------------------- ADD NEW SEMESTER ---------------------
 def AddNewSemester():
     try:
         st.image("SS.jpg", use_container_width=True)
@@ -492,7 +470,7 @@ def AddNewSemester():
         pass
     
     st.header("📝 Add New Semester")
-    st.markdown("Enter your semester details and courses. Your data will be automatically saved to your account.")
+    st.markdown("Enter your semester details and courses. Your data will be saved permanently in the cloud!")
 
     # Semester info
     col1, col2 = st.columns(2)
@@ -608,7 +586,7 @@ def ViewRecords():
     
     # Overall stats
     overall_cgpa = calculate_overall_cgpa(st.session_state.user_id)
-    total_units = sum([sem[4] for sem in semesters])
+    total_units = sum([sem['total_units'] for sem in semesters])
     
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -623,7 +601,7 @@ def ViewRecords():
     # Group semesters by academic year
     years = {}
     for sem in semesters:
-        year = sem[1]  # academic_year
+        year = sem['academic_year']
         if year not in years:
             years[year] = []
         years[year].append(sem)
@@ -633,7 +611,11 @@ def ViewRecords():
         st.subheader(f"🎓 Academic Year: {year}")
         
         for sem in year_semesters:
-            sem_id, acad_year, sem_name, gpa, units, created = sem
+            sem_id = sem['id']
+            sem_name = sem['semester_name']
+            gpa = sem['gpa']
+            units = sem['total_units']
+            created = sem['created_at']
             
             with st.expander(f"{sem_name} - GPA: {gpa:.3f} ({units} units)"):
                 courses = get_semester_courses(sem_id)
@@ -641,7 +623,12 @@ def ViewRecords():
                 if courses:
                     st.markdown("**Courses:**")
                     for course in courses:
-                        course_name, course_code, grade, course_units, gp = course
+                        course_name = course['course_name']
+                        course_code = course.get('course_code', '')
+                        grade = course['grade']
+                        course_units = course['units']
+                        gp = course['grade_point']
+                        
                         code_display = f"({course_code})" if course_code else ""
                         st.write(f"• {course_name} {code_display} - Grade: {grade}, Units: {course_units}, GP: {gp}")
                 
@@ -664,13 +651,22 @@ def ViewRecords():
             result_txt.write("-"*60 + "\n\n")
             
             for sem in year_semesters:
-                sem_id, acad_year, sem_name, gpa, units, created = sem
+                sem_id = sem['id']
+                sem_name = sem['semester_name']
+                gpa = sem['gpa']
+                units = sem['total_units']
+                
                 result_txt.write(f"{sem_name}\n")
                 result_txt.write(f"GPA: {gpa:.3f} | Units: {units}\n\n")
                 
                 courses = get_semester_courses(sem_id)
                 for course in courses:
-                    course_name, course_code, grade, course_units, gp = course
+                    course_name = course['course_name']
+                    course_code = course.get('course_code', '')
+                    grade = course['grade']
+                    course_units = course['units']
+                    gp = course['grade_point']
+                    
                     code_display = f"({course_code})" if course_code else ""
                     result_txt.write(f"  {course_name} {code_display}\n")
                     result_txt.write(f"  Grade: {grade} | Units: {course_units} | GP: {gp}\n\n")
@@ -697,21 +693,25 @@ def WhatDoINeed():
     st.header("🎯 What Do I Need To Reach My Target CGPA?")
     st.markdown("Plan your grades for the upcoming semesters to reach your desired CGPA.")
 
-    # Auto-fill current CGPA if user has records
-    current_cgpa_auto = calculate_overall_cgpa(st.session_state.user_id)
-    semesters = get_user_semesters(st.session_state.user_id)
-    completed_credits_auto = sum([sem[4] for sem in semesters])
-    
-    if current_cgpa_auto > 0:
-        st.info(f"📊 Your current CGPA is {current_cgpa_auto:.3f} with {completed_credits_auto} completed units")
-        use_auto = st.checkbox("Use my current CGPA and units", value=True)
-    else:
-        use_auto = False
-    
-    if use_auto:
-        current_cgpa = current_cgpa_auto
-        completed_credits = completed_credits_auto
-        st.write(f"Using: CGPA = {current_cgpa:.3f}, Units = {completed_credits}")
+    # Auto-fill current CGPA if user has records (and not in guest mode)
+    if not st.session_state.guest_mode:
+        current_cgpa_auto = calculate_overall_cgpa(st.session_state.user_id)
+        semesters = get_user_semesters(st.session_state.user_id)
+        completed_credits_auto = sum([sem['total_units'] for sem in semesters])
+        
+        if current_cgpa_auto > 0:
+            st.info(f"📊 Your current CGPA is {current_cgpa_auto:.3f} with {completed_credits_auto} completed units")
+            use_auto = st.checkbox("Use my current CGPA and units", value=True)
+        else:
+            use_auto = False
+        
+        if use_auto:
+            current_cgpa = current_cgpa_auto
+            completed_credits = completed_credits_auto
+            st.write(f"Using: CGPA = {current_cgpa:.3f}, Units = {completed_credits}")
+        else:
+            current_cgpa = st.number_input("Current CGPA:", min_value=0.0, max_value=5.0, step=0.001, format="%.3f")
+            completed_credits = st.number_input("Total completed Units:", min_value=0, step=1)
     else:
         current_cgpa = st.number_input("Current CGPA:", min_value=0.0, max_value=5.0, step=0.001, format="%.3f")
         completed_credits = st.number_input("Total completed Units:", min_value=0, step=1)

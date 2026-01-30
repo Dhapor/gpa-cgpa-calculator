@@ -205,6 +205,8 @@ if 'username' not in st.session_state:
     st.session_state.username = None
 if 'user_id' not in st.session_state:
     st.session_state.user_id = None
+if 'guest_mode' not in st.session_state:
+    st.session_state.guest_mode = False
 
 # Initialize database
 init_db()
@@ -212,6 +214,23 @@ init_db()
 # ==================== LOGIN/SIGNUP PAGE ====================
 def auth_page():
     st.markdown("<h2 style='text-align: center;'>🎓 Welcome to CGPA Calculator</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Calculate your GPA/CGPA easily with the Nigerian grading system</p>", unsafe_allow_html=True)
+    
+    # Guest Mode Option - Prominent
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("🚀 Try it Now (Guest Mode)", type="primary", use_container_width=True):
+            st.session_state.guest_mode = True
+            st.session_state.logged_in = True
+            st.session_state.username = "Guest"
+            st.session_state.user_id = None
+            st.rerun()
+        
+        st.caption("💡 Test the calculator without creating an account. Your data won't be saved.")
+    
+    st.markdown("---")
+    st.markdown("<p style='text-align: center;'><strong>Want to save your records?</strong> Create an account below 👇</p>", unsafe_allow_html=True)
     
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
     
@@ -225,6 +244,7 @@ def auth_page():
                 user = verify_user(login_username, login_password)
                 if user:
                     st.session_state.logged_in = True
+                    st.session_state.guest_mode = False
                     st.session_state.username = user[1]
                     st.session_state.user_id = user[0]
                     st.success(f"Welcome back, {user[1]}!")
@@ -263,31 +283,49 @@ def auth_page():
 if st.session_state.logged_in:
     # Sidebar with user info and logout
     with st.sidebar:
-        st.markdown(f"### 👤 Welcome, {st.session_state.username}!")
-        
-        # Calculate and display overall CGPA
-        overall_cgpa = calculate_overall_cgpa(st.session_state.user_id)
-        st.metric("Your Overall CGPA", f"{overall_cgpa:.3f}")
-        
-        # Get total units
-        semesters = get_user_semesters(st.session_state.user_id)
-        total_units = sum([sem[4] for sem in semesters])
-        st.metric("Total Units Completed", total_units)
+        if st.session_state.guest_mode:
+            st.markdown("### 👤 Guest Mode")
+            st.info("💡 You're using the app as a guest. Your data won't be saved.")
+            st.markdown("**Want to save your records?**")
+            if st.button("📝 Create Account", use_container_width=True):
+                st.session_state.logged_in = False
+                st.session_state.guest_mode = False
+                st.rerun()
+        else:
+            st.markdown(f"### 👤 Welcome, {st.session_state.username}!")
+            
+            # Calculate and display overall CGPA
+            overall_cgpa = calculate_overall_cgpa(st.session_state.user_id)
+            st.metric("Your Overall CGPA", f"{overall_cgpa:.3f}")
+            
+            # Get total units
+            semesters = get_user_semesters(st.session_state.user_id)
+            total_units = sum([sem[4] for sem in semesters])
+            st.metric("Total Units Completed", total_units)
         
         st.markdown("---")
         
         if st.button("🚪 Logout"):
             st.session_state.logged_in = False
+            st.session_state.guest_mode = False
             st.session_state.username = None
             st.session_state.user_id = None
             st.rerun()
     
-    menu = st.selectbox("Choose a page:", [
-        "Homepage", 
-        "Add New Semester", 
-        "View My Records",
-        "What Do I Need To Get?"
-    ])
+    # Menu options based on mode
+    if st.session_state.guest_mode:
+        menu = st.selectbox("Choose a page:", [
+            "Homepage", 
+            "GPA Calculator",
+            "What Do I Need To Get?"
+        ])
+    else:
+        menu = st.selectbox("Choose a page:", [
+            "Homepage", 
+            "Add New Semester", 
+            "View My Records",
+            "What Do I Need To Get?"
+        ])
 
 # --------------------------- HOME PAGE ----------------------------
 def HomePage():
@@ -323,7 +361,83 @@ def HomePage():
     st.markdown("<hr><p style='text-align: center;'>Built by Datapsalm & Victoria</p>", unsafe_allow_html=True)
     st.markdown("<hr><p style='text-align: center;'>datapsalm@gmail.com</p>", unsafe_allow_html=True)
 
-# -------------------- ADD NEW SEMESTER ---------------------
+# -------------------- GPA CALCULATOR (GUEST MODE) ---------------------
+def GuestGPACalculator():
+    try:
+        st.image("SS.jpg", use_container_width=True)
+    except:
+        pass
+    
+    st.header("📝 GPA Calculator")
+    st.markdown("Calculate your semester GPA quickly. Note: Your data won't be saved in guest mode.")
+
+    # User Inputs
+    scale = st.radio("Choose Grading Scale:", ("5.0 Scale", "4.0 Scale"))
+
+    if scale == "5.0 Scale":
+        grade_map = {'A':5.0, 'B':4.0, 'C':3.0, 'D':2.0, 'E':1.0, 'F':0.0}
+        max_scale = 5.0
+    else:
+        grade_map = {'A':4.0, 'B':3.0, 'C':2.0, 'D':1.0, 'F':0.0}
+        max_scale = 4.0
+
+    num_courses = st.number_input("Number of courses:", min_value=1, max_value=15, step=1, key="num_courses_guest")
+    
+    semester_units = 0
+    semester_points = 0
+    courses_list = []
+
+    for c in range(1, num_courses + 1):
+        st.markdown(f"**Course {c}**")
+        col1, col2, col3 = st.columns([3, 1, 1])
+        
+        with col1:
+            course_name = st.text_input("Course name", key=f"name_guest_{c}", placeholder="e.g., Introduction to Programming")
+        with col2:
+            grade_input = st.selectbox("Grade", list(grade_map.keys()), key=f"grade_guest_{c}")
+        with col3:
+            unit = st.number_input("Units", min_value=1, max_value=6, step=1, key=f"unit_guest_{c}")
+
+        point = grade_map[grade_input]
+        
+        if course_name:
+            semester_units += unit
+            semester_points += point * unit
+            courses_list.append({
+                "name": course_name,
+                "grade": grade_input,
+                "unit": unit,
+                "point": point
+            })
+
+    if courses_list:
+        semester_gpa = semester_points / semester_units if semester_units > 0 else 0
+        
+        st.markdown("---")
+        st.subheader(f"📊 Your GPA: {semester_gpa:.3f}")
+        st.write(f"Total Units: {semester_units}")
+        
+        # Download option
+        result_txt = StringIO()
+        result_txt.write(f"GPA Calculation Report\n")
+        result_txt.write("-"*50 + "\n\n")
+        
+        for course in courses_list:
+            result_txt.write(f"{course['name']}\n")
+            result_txt.write(f"Grade: {course['grade']} | Units: {course['unit']} | GP: {course['point']}\n\n")
+        
+        result_txt.write(f"\nGPA: {semester_gpa:.3f}\n")
+        result_txt.write(f"Total Units: {semester_units}\n")
+        result_txt.write("\nGenerated by: GPA/CGPA App by Datapsalm & Victoria\n")
+        
+        st.download_button(
+            "📥 Download Report",
+            result_txt.getvalue(),
+            f"gpa_report.txt",
+            "text/plain"
+        )
+        
+        st.info("💡 Want to save this semester for future reference? Create an account to track all your semesters!")
 def AddNewSemester():
     try:
         st.image("SS.jpg", use_container_width=True)
@@ -340,8 +454,7 @@ def AddNewSemester():
     with col2:
         semester_name = st.selectbox("Semester", [
             "First Semester",
-            "Second Semester",
-            "Summer/Third Semester"
+            "Second Semester"
         ], key="semester_name")
 
     # User Inputs
@@ -609,11 +722,21 @@ def WhatDoINeed():
 if not st.session_state.logged_in:
     auth_page()
 else:
-    if menu == "Homepage":
-        HomePage()
-    elif menu == "Add New Semester":
-        AddNewSemester()
-    elif menu == "View My Records":
-        ViewRecords()
-    elif menu == "What Do I Need To Get?":
-        WhatDoINeed()
+    if st.session_state.guest_mode:
+        # Guest mode routing
+        if menu == "Homepage":
+            HomePage()
+        elif menu == "GPA Calculator":
+            GuestGPACalculator()
+        elif menu == "What Do I Need To Get?":
+            WhatDoINeed()
+    else:
+        # Logged-in user routing
+        if menu == "Homepage":
+            HomePage()
+        elif menu == "Add New Semester":
+            AddNewSemester()
+        elif menu == "View My Records":
+            ViewRecords()
+        elif menu == "What Do I Need To Get?":
+            WhatDoINeed()

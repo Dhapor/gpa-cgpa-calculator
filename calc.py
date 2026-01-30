@@ -4,6 +4,7 @@ import sqlite3
 import hashlib
 import datetime
 import json
+import requests
 
 # App config
 st.set_page_config(page_title="GPA/CGPA Calculator", layout="centered")
@@ -198,6 +199,46 @@ def calculate_overall_cgpa(user_id):
         return result[0] / result[1]
     return 0.0
 
+# ==================== USAGE TRACKING (OPTIONAL) ====================
+def log_activity(action, page):
+    """
+    Log user activity to Supabase for analytics
+    This is completely optional and anonymous
+    """
+    try:
+        # Check if Supabase credentials are configured
+        if "SUPABASE_URL" not in st.secrets or "SUPABASE_KEY" not in st.secrets:
+            return  # Skip logging if not configured
+        
+        SUPABASE_URL = st.secrets["SUPABASE_URL"]
+        SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+        
+        user_type = "guest" if st.session_state.get('guest_mode', False) else "registered"
+        
+        data = {
+            "action": action,
+            "user_type": user_type,
+            "page": page,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+        
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+        }
+        
+        # Non-blocking request with timeout
+        requests.post(
+            f"{SUPABASE_URL}/rest/v1/usage_logs",
+            json=data,
+            headers=headers,
+            timeout=2
+        )
+    except:
+        # Silent fail - logging should never break the app
+        pass
+
 # ==================== SESSION STATE INITIALIZATION ====================
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
@@ -225,6 +266,7 @@ def auth_page():
             st.session_state.logged_in = True
             st.session_state.username = "Guest"
             st.session_state.user_id = None
+            log_activity("guest_mode_entered", "auth_page")
             st.rerun()
         
         st.caption("💡 Test the calculator without creating an account. Your data won't be saved.")
@@ -247,6 +289,7 @@ def auth_page():
                     st.session_state.guest_mode = False
                     st.session_state.username = user[1]
                     st.session_state.user_id = user[0]
+                    log_activity("user_login", "auth_page")
                     st.success(f"Welcome back, {user[1]}!")
                     st.rerun()
                 else:
@@ -270,6 +313,7 @@ def auth_page():
                 else:
                     success, message = create_user(signup_username, signup_email, signup_password)
                     if success:
+                        log_activity("user_signup", "auth_page")
                         st.success(message)
                         st.info("Please login with your new account!")
                     else:
@@ -417,6 +461,9 @@ def GuestGPACalculator():
         st.subheader(f"📊 Your GPA: {semester_gpa:.3f}")
         st.write(f"Total Units: {semester_units}")
         
+        # Log this calculation
+        log_activity("calculate_gpa", "guest_calculator")
+        
         # Download option
         result_txt = StringIO()
         result_txt.write(f"GPA Calculation Report\n")
@@ -520,6 +567,7 @@ def AddNewSemester():
                         courses_list
                     )
                     if success:
+                        log_activity("save_semester", "add_semester")
                         st.success(message)
                         st.balloons()
                     else:

@@ -43,6 +43,13 @@ st.markdown("""
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
+        /* Stats cards - make them stand out */
+        [data-testid="stMetricValue"] {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f77b4;
+        }
+        
         /* Better mobile experience */
         @media (max-width: 768px) {
             img {
@@ -50,6 +57,13 @@ st.markdown("""
             }
             .mobile-text {
                 font-size: 14px;
+            }
+            /* Make stats more readable on mobile */
+            [data-testid="stMetricValue"] {
+                font-size: 20px;
+            }
+            [data-testid="stMetricLabel"] {
+                font-size: 12px;
             }
         }
     </style>
@@ -330,25 +344,35 @@ if st.session_state.logged_in:
                 st.session_state.guest_mode = False
                 st.rerun()
         else:
-            st.markdown(f"### 👤 Welcome, {st.session_state.username}!")
-            
-            # Calculate and display overall CGPA
-            overall_cgpa = calculate_overall_cgpa(st.session_state.user_id)
-            st.metric("Your Overall CGPA", f"{overall_cgpa:.3f}")
-            
-            # Get total units
-            semesters = get_user_semesters(st.session_state.user_id)
-            total_units = sum([sem['total_units'] for sem in semesters])
-            st.metric("Total Units Completed", total_units)
+            st.markdown(f"### 👤 {st.session_state.username}")
         
         st.markdown("---")
         
-        if st.button("🚪 Logout"):
+        if st.button("🚪 Logout", use_container_width=True):
             st.session_state.logged_in = False
             st.session_state.guest_mode = False
             st.session_state.username = None
             st.session_state.user_id = None
             st.rerun()
+    
+    # Show stats prominently at the top for logged-in users (NOT in sidebar - mobile friendly!)
+    if not st.session_state.guest_mode:
+        # Calculate stats
+        overall_cgpa = calculate_overall_cgpa(st.session_state.user_id)
+        semesters = get_user_semesters(st.session_state.user_id)
+        total_units = sum([sem['total_units'] for sem in semesters])
+        
+        # Display stats at top of page (visible on mobile!)
+        st.markdown(f"### 👋 Welcome back, {st.session_state.username}!")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("📊 Overall CGPA", f"{overall_cgpa:.3f}")
+        with col2:
+            st.metric("📖 Total Units", total_units)
+        with col3:
+            st.metric("📅 Semesters", len(semesters))
+        
+        st.markdown("---")
     
     # Menu options based on mode
     if st.session_state.guest_mode:

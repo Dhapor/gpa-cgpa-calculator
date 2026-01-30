@@ -34,6 +34,24 @@ st.markdown("""
             border-radius: 5px;
             color: #721c24;
         }
+        
+        /* Responsive images - adapt to screen size */
+        img {
+            max-width: 100% !important;
+            height: auto !important;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Better mobile experience */
+        @media (max-width: 768px) {
+            img {
+                margin: 10px 0;
+            }
+            .mobile-text {
+                font-size: 14px;
+            }
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -354,7 +372,7 @@ def HomePage():
     
     # Try to load image, but don't break if it doesn't exist
     try:
-        st.image("smiling-woman-with-afro-posing-pink-sweater.jpg", width=800)
+        st.image("smiling-woman-with-afro-posing-pink-sweater.jpg", use_container_width=True)
     except:
         st.info("💡 Welcome! Use the menu above to add semesters or view your records.")
     

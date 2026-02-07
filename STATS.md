@@ -1,6 +1,6 @@
 # 📊 CGPA Calculator - Live Usage Statistics
 
-> **Last Updated:** February 06, 2026 at 01:08 UTC  
+> **Last Updated:** February 07, 2026 at 01:07 UTC  
 > *Automatically updated daily via GitHub Actions*
 
 ---
@@ -9,9 +9,9 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total Actions** | **55** |
-| **Guest Users** | 45 |
-| **Registered Users** | 10 |
+| **Total Actions** | **227** |
+| **Guest Users** | 191 |
+| **Registered Users** | 36 |
 
 ---
 
@@ -19,29 +19,30 @@
 
 | Period | Actions |
 |--------|---------|
-| **Last 7 Days** | 55 |
-| **Last 30 Days** | 55 |
+| **Last 7 Days** | 177 |
+| **Last 30 Days** | 227 |
 
 ---
 
 ## 🔥 Most Popular Features
 
 **Top Actions:**
-   - calculate_gpa: 32 times
-   - guest_mode_entered: 13 times
-   - user_login: 7 times
+   - calculate_gpa: 163 times
+   - guest_mode_entered: 28 times
+   - user_login: 16 times
 
 **Most Visited Pages:**
-   - guest_calculator: 32 visits
-   - auth_page: 23 visits
+   - guest_calculator: 163 visits
+   - auth_page: 57 visits
+   - add_semester: 7 visits
 
 ---
 
 ## 📈 Growth Insights
 
-- **Average daily usage:** 55 actions/day
-- **Guest to Registered ratio:** 45:10
-- **Engagement rate:** 18.2% registered users
+- **Average daily usage:** 113 actions/day
+- **Guest to Registered ratio:** 191:36
+- **Engagement rate:** 15.9% registered users
 
 ---
 

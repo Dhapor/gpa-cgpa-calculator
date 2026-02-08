@@ -520,7 +520,27 @@ def welcome_page():
     # Footer
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #666;'>Built by Datapsalm & Victoria | datapsalm@gmail.com</p>", unsafe_allow_html=True)
+    st.markdown("""
+        <div style='text-align: center; color: #666; padding: 20px;'>
+            <p style='font-size: 0.9rem; margin-bottom: 10px;'>
+                <strong>Built by Mathematics Students</strong><br>
+                Department of Mathematics, University of Lagos 🎓<br>
+                © 2024 | Crafted with 💙 for students
+            </p>
+            <p style='font-size: 0.85rem; margin-top: 15px;'>
+                <strong>Developers:</strong><br>
+                <a href='https://www.linkedin.com/in/datapsalm' target='_blank' style='color: #667eea; text-decoration: none;'>
+                    🔗 Datapsalm (LinkedIn)
+                </a> | 
+                <a href='https://www.linkedin.com/in/victoria-fagbemiro-8038b8271' target='_blank' style='color: #667eea; text-decoration: none;'>
+                    🔗 Victoria (LinkedIn)
+                </a>
+            </p>
+            <p style='font-size: 0.8rem; margin-top: 10px; color: #999;'>
+                📧 Contact: datapsalm@gmail.com
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
 
 # ==================== TUTORIAL PAGE ====================
 def tutorial_page():
@@ -982,44 +1002,71 @@ def what_do_i_need():
         
         equal_gpa = points_remaining / total_future_credits
         
-        # Scenario calculations (keeping your original logic intact)
+        # Scenario calculations with 5.0 cap
+        # Option 2: Start Lower
         sem1_lower = equal_gpa * 0.9
         sem2_higher = (points_remaining - sem1_lower * sem1_credits) / sem2_credits
         
+        # If sem2_higher exceeds 5.0, adjust sem1_lower upward
+        if sem2_higher > 5.0:
+            sem2_higher = 5.0
+            sem1_lower = (points_remaining - sem2_higher * sem2_credits) / sem1_credits
+        
+        # Option 3: Start Higher
         sem1_higher = equal_gpa * 1.1
         sem2_lower = (points_remaining - sem1_higher * sem1_credits) / sem2_credits
+        
+        # If sem1_higher exceeds 5.0, cap it and adjust sem2_lower
+        if sem1_higher > 5.0:
+            sem1_higher = 5.0
+            sem2_lower = (points_remaining - sem1_higher * sem1_credits) / sem2_credits
         
         st.markdown("---")
         st.markdown("### 📋 Your GPA Plans")
         
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown("**Option 1: Equal**")
-            st.metric("Sem 1", f"{equal_gpa:.2f}")
-            st.metric("Sem 2", f"{equal_gpa:.2f}")
-        
-        with col2:
-            st.markdown("**Option 2: Start Lower**")
-            st.metric("Sem 1", f"{sem1_lower:.2f}")
-            st.metric("Sem 2", f"{sem2_higher:.2f}")
-        
-        with col3:
-            st.markdown("**Option 3: Start Higher**")
-            st.metric("Sem 1", f"{sem1_higher:.2f}")
-            st.metric("Sem 2", f"{sem2_lower:.2f}")
-        
-        st.markdown("---")
-        
-        # Feasibility assessment
-        if equal_gpa > 5:
-            st.error("❌ This target is not achievable in 2 semesters (required GPA > 5.0)")
-        elif equal_gpa >= 4.8:
-            st.warning("⚠️ Extremely challenging: You need nearly all A's")
-        elif equal_gpa >= 4.0:
-            st.info("💪 High performance needed: Mostly A's and some B's")
+        # Check if target is achievable
+        if equal_gpa > 5.0:
+            st.error("❌ This target is NOT achievable in 2 semesters")
+            st.warning(f"Even with perfect 5.0 GPA in both semesters, you would only reach {((current_cgpa * completed_credits) + (5.0 * total_future_credits)) / total_units_all:.2f} CGPA")
         else:
-            st.success("✅ Achievable with good performance")
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.markdown("**Option 1: Equal**")
+                if equal_gpa <= 5.0:
+                    st.metric("Sem 1", f"{equal_gpa:.2f}")
+                    st.metric("Sem 2", f"{equal_gpa:.2f}")
+                else:
+                    st.metric("Sem 1", "Not Possible")
+                    st.metric("Sem 2", "Not Possible")
+            
+            with col2:
+                st.markdown("**Option 2: Start Lower**")
+                if sem1_lower <= 5.0 and sem2_higher <= 5.0:
+                    st.metric("Sem 1", f"{sem1_lower:.2f}")
+                    st.metric("Sem 2", f"{sem2_higher:.2f}")
+                else:
+                    st.metric("Sem 1", f"{sem1_lower:.2f}" if sem1_lower <= 5.0 else "> 5.0 ❌")
+                    st.metric("Sem 2", f"{sem2_higher:.2f}" if sem2_higher <= 5.0 else "> 5.0 ❌")
+            
+            with col3:
+                st.markdown("**Option 3: Start Higher**")
+                if sem1_higher <= 5.0 and sem2_lower <= 5.0:
+                    st.metric("Sem 1", f"{sem1_higher:.2f}")
+                    st.metric("Sem 2", f"{sem2_lower:.2f}")
+                else:
+                    st.metric("Sem 1", f"{sem1_higher:.2f}" if sem1_higher <= 5.0 else "> 5.0 ❌")
+                    st.metric("Sem 2", f"{sem2_lower:.2f}" if sem2_lower <= 5.0 else "> 5.0 ❌")
+            
+            st.markdown("---")
+            
+            # Feasibility assessment
+            if equal_gpa >= 4.8:
+                st.warning("⚠️ Extremely challenging: You need nearly all A's in both semesters")
+            elif equal_gpa >= 4.0:
+                st.info("💪 High performance needed: Mostly A's and some B's")
+            else:
+                st.success("✅ Achievable with good performance")
 
 # ==================== VIEW RECORDS ====================
 def view_records():
@@ -1133,7 +1180,9 @@ def generate_report(year, semester, gpa, units, courses):
     
     report.write("\n" + "="*50 + "\n")
     report.write("Generated by GPA/CGPA Calculator\n")
-    report.write("Built by Datapsalm & Victoria\n")
+    report.write("Built by Mathematics Students, University of Lagos (2024)\n")
+    report.write("Developers: Datapsalm & Victoria\n")
+    report.write("Contact: datapsalm@gmail.com\n")
     
     return report.getvalue()
 
@@ -1161,7 +1210,8 @@ def generate_cgpa_report(semesters, cgpa, total_units):
     
     report.write("="*60 + "\n")
     report.write("Generated by GPA/CGPA Calculator\n")
-    report.write("Built by Datapsalm & Victoria\n")
+    report.write("Built by Mathematics Students, University of Lagos (2024)\n")
+    report.write("Developers: Datapsalm & Victoria\n")
     
     return report.getvalue()
 
@@ -1193,6 +1243,7 @@ def generate_full_records_report(username, cgpa, total_units, years):
     
     report.write("="*60 + "\n")
     report.write("Generated by GPA/CGPA Calculator\n")
+    report.write("Built by Mathematics Students, University of Lagos (2024)\n")
     
     return report.getvalue()
 

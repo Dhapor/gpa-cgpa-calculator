@@ -645,9 +645,8 @@ def main_calculator():
                 st.session_state.user_id = None
                 st.rerun()
         else:
-            with st.popover("👤 Account"):
-                if st.button("📝 Create Account"):
-                    show_signup_modal()
+            # Show create account button
+            pass  # Account creation is available in the "My Records" tab
     
     # Show user stats if logged in
     if st.session_state.user_id:

@@ -39,23 +39,27 @@ st.markdown("""
         .hero-section {
             text-align: center;
             padding: 2rem 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: white;
             border-radius: 20px;
             margin-bottom: 2rem;
-            color: white;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            color: #333;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 2px solid #f0f0f0;
         }
         
         .hero-title {
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .hero-subtitle {
             font-size: 1.1rem;
-            font-weight: 300;
-            opacity: 0.95;
+            font-weight: 400;
+            color: #666;
         }
         
         /* Mobile hero adjustments */
@@ -532,7 +536,7 @@ def welcome_page():
                 <a href='https://www.linkedin.com/in/datapsalm' target='_blank' style='color: #667eea; text-decoration: none;'>
                     🔗 Datapsalm (LinkedIn)
                 </a> | 
-                <a href='https://www.linkedin.com/in/victoria-fagbemiro-8038b8271' target='_blank' style='color: #667eea; text-decoration: none;'>
+                <a href='https://www.linkedin.com/in/victoria-xxxxxxx' target='_blank' style='color: #667eea; text-decoration: none;'>
                     🔗 Victoria (LinkedIn)
                 </a>
             </p>
@@ -573,7 +577,7 @@ def tutorial_page():
             <strong style="font-size: 1.2rem;">Enter Your Courses</strong>
             <p style="margin-top: 0.5rem; color: #666;">
             For each course, enter:<br>
-            • Course name (e.g., "Introduction to Programming")<br>
+            • Course code (e.g., "MAT101", "PHY102")<br>
             • Your grade (A, B, C, D, E, or F)<br>
             • Course units (usually 2-4 units per course)
             </p>
@@ -621,11 +625,11 @@ def tutorial_page():
         st.markdown("""
         **Scenario:** You took 5 courses this semester
         
-        1. **Mathematics** - Grade: A, Units: 3
-        2. **Physics** - Grade: B, Units: 4
-        3. **Chemistry** - Grade: A, Units: 3
-        4. **English** - Grade: C, Units: 2
-        5. **Computer Science** - Grade: B, Units: 4
+        1. **MAT101** - Grade: A, Units: 3
+        2. **PHY101** - Grade: B, Units: 4
+        3. **CHM101** - Grade: A, Units: 3
+        4. **ENG101** - Grade: C, Units: 2
+        5. **CSC101** - Grade: B, Units: 4
         
         **On 5.0 scale:**
         - A = 5.0, B = 4.0, C = 3.0
@@ -755,24 +759,22 @@ def calculate_single_gpa(grade_map):
     for c in range(1, num_courses + 1):
         with st.container():
             st.markdown(f"**Course {c}**")
-            col1, col2, col3, col4 = st.columns([4, 2, 1, 1])
+            col1, col2, col3 = st.columns([3, 1, 1])
             
             with col1:
-                course_name = st.text_input("Course name", key=f"name_{c}", placeholder="e.g., Introduction to Programming")
+                course_code = st.text_input("Course Code", key=f"code_{c}", placeholder="e.g., MAT101")
             with col2:
-                course_code = st.text_input("Code (optional)", key=f"code_{c}", placeholder="CSC101")
-            with col3:
                 grade_input = st.selectbox("Grade", list(grade_map.keys()), key=f"grade_{c}")
-            with col4:
+            with col3:
                 unit = st.number_input("Units", min_value=1, max_value=6, value=3, step=1, key=f"unit_{c}")
             
             point = grade_map[grade_input]
             
-            if course_name:
+            if course_code:
                 semester_units += unit
                 semester_points += point * unit
                 courses_list.append({
-                    "name": course_name,
+                    "name": course_code,  # Using course code as name
                     "code": course_code,
                     "grade": grade_input,
                     "unit": unit,
@@ -862,10 +864,10 @@ def calculate_multi_semester_cgpa(grade_map):
             courses_list = []
             
             for c in range(1, num_courses + 1):
-                col1, col2, col3 = st.columns([4, 1, 1])
+                col1, col2, col3 = st.columns([3, 1, 1])
                 
                 with col1:
-                    course_name = st.text_input("Course", key=f"sem{sem_num}_name_{c}", placeholder="Course name")
+                    course_code = st.text_input("Course Code", key=f"sem{sem_num}_code_{c}", placeholder="e.g., MAT101")
                 with col2:
                     grade_input = st.selectbox("Grade", list(grade_map.keys()), key=f"sem{sem_num}_grade_{c}")
                 with col3:
@@ -873,11 +875,12 @@ def calculate_multi_semester_cgpa(grade_map):
                 
                 point = grade_map[grade_input]
                 
-                if course_name:
+                if course_code:
                     semester_units += unit
                     semester_points += point * unit
                     courses_list.append({
-                        "name": course_name,
+                        "name": course_code,  # Using course code as name
+                        "code": course_code,
                         "grade": grade_input,
                         "unit": unit,
                         "point": point
@@ -1131,7 +1134,7 @@ def quick_tutorial():
         st.markdown("""
         1. Select **Single Semester GPA**
         2. Choose your grading scale (5.0 or 4.0)
-        3. Enter each course name, grade, and units
+        3. Enter each course code, grade, and units
         4. Your GPA is calculated automatically!
         """)
     

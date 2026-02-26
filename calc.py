@@ -8,7 +8,7 @@ import json
 # App config
 st.set_page_config(
     page_title="GPA/CGPA Calculator", 
-    layout="wide",
+    layout="centered",
     initial_sidebar_state="collapsed"
 )
 
@@ -395,20 +395,18 @@ def welcome_page():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Third smaller card: Goal Planning
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.markdown("""
-            <div class="action-card">
-                <span class="card-icon">🎯</span>
-                <div class="card-title">Goal Planning</div>
-                <div class="card-desc">Find out what grades you need to hit your target CGPA</div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Plan My Grades →", key="btn_goal", use_container_width=True):
-            st.session_state.logged_in = True
-            st.session_state.start_tab = "goal"
-            st.rerun()
+    # Third card: Goal Planning — same full-width treatment
+    st.markdown("""
+        <div class="action-card">
+            <span class="card-icon">🎯</span>
+            <div class="card-title">Goal Planning</div>
+            <div class="card-desc">Find out what grades you need to hit your target CGPA</div>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("Plan My Grades →", key="btn_goal", type="primary", use_container_width=True):
+        st.session_state.logged_in = True
+        st.session_state.start_tab = "goal"
+        st.rerun()
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -630,20 +628,40 @@ def main_calculator():
             st.metric("📅 Semesters", len(semesters))
         st.markdown("---")
 
+    # Determine default tab index based on start_tab
+    start = st.session_state.get("start_tab", None)
+
+    # If user came from "Plan My Grades" on landing, show goal calculator directly
+    if start == "goal":
+        st.session_state.start_tab = None
+        st.markdown("### 🎯 What Do I Need?")
+        what_do_i_need()
+        st.markdown("---")
+        if st.button("← Back to All Tools", use_container_width=True):
+            st.rerun()
+        return
+
     tab1, tab2, tab3, tab4 = st.tabs(["📊 Calculate GPA/CGPA", "🎯 What Do I Need?", "📚 My Records", "ℹ️ Tutorial"])
 
     with tab1:
         calculate_gpa_cgpa()
+
     with tab2:
         what_do_i_need()
+
     with tab3:
         if st.session_state.user_id:
             view_records()
         else:
             st.info("📝 Create a free account to save and view your academic records!")
             show_signup_inline()
+
     with tab4:
         quick_tutorial()
+
+    # Clear start_tab after render so it doesn't persist
+    if start:
+        st.session_state.start_tab = None
 
 
 # ==================== GPA/CGPA CALCULATOR ====================
@@ -1063,9 +1081,4 @@ if not st.session_state.logged_in:
     else:
         welcome_page()
 else:
-    # If coming from goal planning card, switch to goal tab
-    if st.session_state.start_tab == "goal":
-        # Can't programmatically switch Streamlit tabs, so show a banner
-        st.info("👆 Click on **🎯 What Do I Need?** tab above to plan your grades!")
-        st.session_state.start_tab = None
     main_calculator()

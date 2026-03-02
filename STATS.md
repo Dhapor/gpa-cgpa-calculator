@@ -1,6 +1,6 @@
 # 📊 CGPA Calculator - Live Usage Statistics
 
-> **Last Updated:** March 01, 2026 at 01:18 UTC  
+> **Last Updated:** March 02, 2026 at 01:10 UTC  
 > *Automatically updated daily via GitHub Actions*
 
 ---
@@ -20,7 +20,7 @@
 | Period | Actions |
 |--------|---------|
 | **Last 7 Days** | 0 |
-| **Last 30 Days** | 268 |
+| **Last 30 Days** | 218 |
 
 ---
 
